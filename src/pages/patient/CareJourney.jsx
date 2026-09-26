@@ -1,118 +1,79 @@
 import React from "react";
+import ReferralTimeline from "../../components/referral/ReferralTimeline";
 
-const events = [
-  {
-    date: "28 Sep 2026",
-    title: "Hospital Consultation",
-    description: "Scheduled consultation at District Hospital, Howrah.",
-    icon: "🏥",
-    active: true
-  },
-  {
-    date: "27 Sep 2026",
-    title: "Patient In Transfer",
-    description: "Referral transfer initiated from source facility.",
-    icon: "🚑",
-    active: true
-  },
-  {
-    date: "27 Sep 2026",
-    title: "Referral Accepted",
-    description: "District Hospital accepted the referral.",
-    icon: "✓",
-    active: true
-  },
-  {
-    date: "26 Sep 2026",
-    title: "Doctor Referral Created",
-    description: "Cardiology referral created by attending doctor.",
-    icon: "📋",
-    active: true
-  },
-  {
-    date: "25 Sep 2026",
-    title: "Doctor Consultation",
-    description: "Initial consultation completed.",
-    icon: "🩺",
-    active: true
-  }
-];
+const CareJourney = () => {
 
-export default function CareJourney() {
+  const events = [
+    {
+      title: "Patient Registered",
+      description: "Patient registered by Health Worker.",
+      timestamp: "26 Sep, 09:10 AM",
+      completed: true,
+    },
+    {
+      title: "Health Assessment",
+      description: "Initial vitals and symptoms recorded.",
+      timestamp: "26 Sep, 09:35 AM",
+      completed: true,
+    },
+    {
+      title: "Doctor Consultation",
+      description: "Consultation completed.",
+      timestamp: "26 Sep, 10:15 AM",
+      completed: true,
+    },
+    {
+      title: "Referral Created",
+      description: "Patient referred for higher-level care.",
+      timestamp: "26 Sep, 10:40 AM",
+      completed: true,
+    },
+    {
+      title: "Facility Accepted",
+      description: "Receiving facility accepted the referral.",
+      timestamp: "26 Sep, 10:48 AM",
+      completed: true,
+    },
+    {
+      title: "Patient Transfer",
+      description: "Transport is being coordinated.",
+      timestamp: "In progress",
+      completed: false,
+    },
+    {
+      title: "Follow-up",
+      description: "Follow-up will be scheduled after treatment.",
+      timestamp: "Pending",
+      completed: false,
+    },
+  ];
+
   return (
     <div className="page-container">
 
-      <div className="record-header">
+      <div className="page-header">
         <div>
-          <span className="page-kicker">CONTINUITY OF CARE</span>
-          <h2>Care Journey</h2>
-          <p>Follow every important step in your healthcare journey.</p>
-        </div>
+          <span className="eyebrow">
+            CARE CONTINUITY
+          </span>
 
-        <span className="journey-status">
-          ● Journey Active
-        </span>
+          <h1>My Care Journey</h1>
+
+          <p>
+            Track your healthcare journey from
+            registration to follow-up.
+          </p>
+        </div>
       </div>
 
-      <section className="journey-summary">
+      <div className="journey-panel">
 
-        <div>
-          <span>Current Stage</span>
-          <strong>In Transfer</strong>
-        </div>
+        <ReferralTimeline events={events} />
 
-        <div>
-          <span>Care Started</span>
-          <strong>25 Sep 2026</strong>
-        </div>
-
-        <div>
-          <span>Referral ID</span>
-          <strong>REF-2026-1042</strong>
-        </div>
-
-        <div>
-          <span>Destination</span>
-          <strong>District Hospital</strong>
-        </div>
-
-      </section>
-
-      <section className="dashboard-panel timeline-panel">
-
-        <div className="panel-header">
-          <div>
-            <h3>Care Timeline</h3>
-            <p>Chronological history of your care</p>
-          </div>
-        </div>
-
-        <div className="timeline">
-
-          {events.map((event, index) => (
-            <div className="timeline-item" key={index}>
-
-              <div className="timeline-marker">
-                {event.icon}
-              </div>
-
-              {index !== events.length - 1 && (
-                <div className="timeline-line"></div>
-              )}
-
-              <div className="timeline-content">
-                <span>{event.date}</span>
-                <h4>{event.title}</h4>
-                <p>{event.description}</p>
-              </div>
-
-            </div>
-          ))}
-
-        </div>
-
-      </section>
+      </div>
 
     </div>
   );
-}
+};
+
+export default CareJourney;
