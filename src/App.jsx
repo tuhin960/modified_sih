@@ -1,5 +1,13 @@
 import { useState } from "react";
 import "./App.css";
+import HealthWorkerLayout from "./pages/healthworker/HealthWorkerLayout";
+import HealthWorkerDashboard from "./pages/healthworker/Dashboard";
+import RegisterPatient from "./pages/healthworker/RegisterPatient";
+import Assessment from "./pages/healthworker/Assessment";
+import HealthWorkerPatients from "./pages/healthworker/Patients";
+import HealthWorkerReferrals from "./pages/healthworker/Referrals";
+import FollowUps from "./pages/healthworker/FollowUps";
+import OfflineMode from "./pages/healthworker/OfflineMode";
 
 const roleConfig = {
   patient: {
@@ -127,7 +135,45 @@ function App() {
       alert(`Please enter your ${currentRole.idLabel}.`);
       return;
     }
+<Route
+  path="/healthworker"
+  element={<HealthWorkerLayout />}
+>
+  <Route
+    index
+    element={<HealthWorkerDashboard />}
+  />
 
+  <Route
+    path="register-patient"
+    element={<RegisterPatient />}
+  />
+
+  <Route
+    path="assessment"
+    element={<Assessment />}
+  />
+
+  <Route
+    path="patients"
+    element={<HealthWorkerPatients />}
+  />
+
+  <Route
+    path="referrals"
+    element={<HealthWorkerReferrals />}
+  />
+
+  <Route
+    path="follow-ups"
+    element={<FollowUps />}
+  />
+
+  <Route
+    path="offline"
+    element={<OfflineMode />}
+  />
+</Route>
     /*
       Firebase Authentication will be connected here later.
 
