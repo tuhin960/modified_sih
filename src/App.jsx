@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./App.css";
+import { signUpUser, loginUser, resetPassword } from "./firebase/auth";
 
 const roleConfig = {
   patient: {
@@ -60,6 +61,7 @@ const dashboardRoutes = {
 function App() {
   const [selectedRole, setSelectedRole] = useState("patient");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [loginData, setLoginData] = useState({
     specialId: "",
@@ -99,7 +101,7 @@ function App() {
     }));
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!loginData.email.trim()) {
@@ -117,22 +119,40 @@ function App() {
       return;
     }
 
-    /*
-      Firebase Authentication will be connected here later.
+    setIsLoading(true);
 
-      Example flow:
-      1. Firebase Auth verifies email/password.
-      2. Firestore verifies the selected role.
-      3. Firestore verifies the role-specific ID.
-      4. User is redirected to the correct dashboard.
-    */
+    try {
+      await loginUser(loginData.email, loginData.password);
 
-    alert(
-      `Login UI validated successfully.\n\nRole: ${currentRole.label}\nDashboard: ${dashboardRoutes[selectedRole]}`
-    );
+      alert(
+        `Login successful!\n\nWelcome back.\nRedirecting to: ${dashboardRoutes[selectedRole]}`
+      );
+
+      // TODO: yahan navigate karna, jaise:
+      // navigate(dashboardRoutes[selectedRole]);
+    } catch (error) {
+      console.error("Login error:", error);
+
+      if (
+        error.code === "auth/invalid-credential" ||
+        error.code === "auth/wrong-password"
+      ) {
+        alert("Incorrect email or password. Please try again.");
+      } else if (error.code === "auth/user-not-found") {
+        alert("No account found with this email. Please sign up first.");
+      } else if (error.code === "auth/invalid-email") {
+        alert("Please enter a valid email address.");
+      } else if (error.code === "auth/too-many-requests") {
+        alert("Too many failed attempts. Please try again later.");
+      } else {
+        alert("Login failed: " + error.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleForgotPassword = (e) => {
+  const handleForgotPassword = async (e) => {
     e.preventDefault();
 
     if (!forgotEmail.trim()) {
@@ -140,12 +160,24 @@ function App() {
       return;
     }
 
-    alert(
-      `Password reset link will be sent to ${forgotEmail} after Firebase Authentication is connected.`
-    );
+    try {
+      await resetPassword(forgotEmail);
+      alert(
+        `Password reset link sent to ${forgotEmail}. Please check your inbox.`
+      );
+      setForgotEmail("");
+      setModal(null);
+    } catch (error) {
+      console.error("Reset password error:", error);
 
-    setForgotEmail("");
-    setModal(null);
+      if (error.code === "auth/user-not-found") {
+        alert("No account found with this email address.");
+      } else if (error.code === "auth/invalid-email") {
+        alert("Please enter a valid email address.");
+      } else {
+        alert("Failed to send reset link: " + error.message);
+      }
+    }
   };
 
   const handleSignupRoleChange = (role) => {
@@ -164,7 +196,7 @@ function App() {
     }));
   };
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
 
     if (!signupData.name.trim()) {
@@ -187,6 +219,11 @@ function App() {
       return;
     }
 
+    if (signupData.password.length < 6) {
+      alert("Password must be at least 6 characters long.");
+      return;
+    }
+
     if (signupData.password !== signupData.confirmPassword) {
       alert("Passwords do not match.");
       return;
@@ -197,11 +234,36 @@ function App() {
       return;
     }
 
-    alert(
-      `Registration UI validated successfully for ${roleConfig[signupData.role].label}.\n\nFirebase registration will be connected next.`
-    );
+    try {
+      await signUpUser({
+        name: signupData.name,
+        email: signupData.email,
+        mobile: signupData.mobile,
+        password: signupData.password,
+        role: signupData.role,
+        specialId: signupData.specialId,
+      });
 
-    setModal(null);
+      alert(
+        `Account created successfully for ${roleConfig[signupData.role].label}!\n\nYou can now log in.`
+      );
+
+      setModal(null);
+    } catch (error) {
+      console.error("Signup error:", error);
+
+      if (error.code === "auth/email-already-in-use") {
+        alert(
+          "An account with this email already exists. Please log in instead."
+        );
+      } else if (error.code === "auth/invalid-email") {
+        alert("Please enter a valid email address.");
+      } else if (error.code === "auth/weak-password") {
+        alert("Password is too weak. Please use at least 6 characters.");
+      } else {
+        alert("Signup failed: " + error.message);
+      }
+    }
   };
 
   return (
@@ -209,12 +271,24 @@ function App() {
       {/* ROLE-SPECIFIC BACKGROUND */}
       <div className="role-background">
         <div className="medical-pattern">
-          <span className="pattern-icon icon-1">{currentRole.backgroundIcons[0]}</span>
-          <span className="pattern-icon icon-2">{currentRole.backgroundIcons[1]}</span>
-          <span className="pattern-icon icon-3">{currentRole.backgroundIcons[2]}</span>
-          <span className="pattern-icon icon-4">{currentRole.backgroundIcons[3]}</span>
-          <span className="pattern-icon icon-5">{currentRole.backgroundIcons[4]}</span>
-          <span className="pattern-icon icon-6">{currentRole.backgroundIcons[5]}</span>
+          <span className="pattern-icon icon-1">
+            {currentRole.backgroundIcons[0]}
+          </span>
+          <span className="pattern-icon icon-2">
+            {currentRole.backgroundIcons[1]}
+          </span>
+          <span className="pattern-icon icon-3">
+            {currentRole.backgroundIcons[2]}
+          </span>
+          <span className="pattern-icon icon-4">
+            {currentRole.backgroundIcons[3]}
+          </span>
+          <span className="pattern-icon icon-5">
+            {currentRole.backgroundIcons[4]}
+          </span>
+          <span className="pattern-icon icon-6">
+            {currentRole.backgroundIcons[5]}
+          </span>
         </div>
         <div className="role-watermark">{currentRole.watermark}</div>
       </div>
@@ -223,10 +297,18 @@ function App() {
         <div className="gradient-blob blob-one"></div>
         <div className="gradient-blob blob-two"></div>
         <div className="gradient-blob blob-three"></div>
-        <div className="floating-card floating-one"><span>🩺</span></div>
-        <div className="floating-card floating-two"><span>❤️</span></div>
-        <div className="floating-card floating-three"><span>💊</span></div>
-        <div className="floating-card floating-four"><span>🏥</span></div>
+        <div className="floating-card floating-one">
+          <span>🩺</span>
+        </div>
+        <div className="floating-card floating-two">
+          <span>❤️</span>
+        </div>
+        <div className="floating-card floating-three">
+          <span>💊</span>
+        </div>
+        <div className="floating-card floating-four">
+          <span>🏥</span>
+        </div>
       </div>
 
       <main className="page-container">
@@ -306,8 +388,12 @@ function App() {
             <div className="form-header">
               <div>
                 <div className="welcome-label">SECURE ACCESS</div>
-                <h2>Welcome back <span>👋</span></h2>
-                <p>Select your role to continue to your healthcare workspace.</p>
+                <h2>
+                  Welcome back <span>👋</span>
+                </h2>
+                <p>
+                  Select your role to continue to your healthcare workspace.
+                </p>
               </div>
               <div className="header-shield">🔐</div>
             </div>
@@ -321,7 +407,9 @@ function App() {
                   <button
                     key={key}
                     type="button"
-                    className={`role-card ${selectedRole === key ? "active" : ""}`}
+                    className={`role-card ${
+                      selectedRole === key ? "active" : ""
+                    }`}
                     onClick={() => handleRoleChange(key)}
                   >
                     <div className="role-icon">{role.icon}</div>
@@ -413,7 +501,9 @@ function App() {
                     type="button"
                     className="password-toggle"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                   >
                     {showPassword ? "🙈" : "👁️"}
                   </button>
@@ -435,8 +525,8 @@ function App() {
                 </div>
               </div>
 
-              <button type="submit" className="login-button">
-                <span>Secure Login</span>
+              <button type="submit" className="login-button" disabled={isLoading}>
+                <span>{isLoading ? "Logging in..." : "Secure Login"}</span>
                 <span className="button-arrow">→</span>
               </button>
             </form>
